@@ -1,0 +1,90 @@
+// 1. create referee
+load csv with headers from "file:///Task_2_PremierLeauge_2019.csv" as line
+merge(:Referee{RefereeName: line.Referee})
+
+// 2. create matchdate
+load csv with headers from "file:///Task_2_PremierLeauge_2019.csv" as line
+merge(:Match{MatchDate: line.Date, MatchTime: line.Time, FTHG: toInteger(line.FTHG),
+	FTAG: toInteger(line. FTAG), FTR: line.FTR,
+	HTHG: toInteger(line.HTHG), HTAG: toInteger(line.HTAG),
+	HTR: line.HTR, HS: toInteger(line.HS), AS: toInteger(line.AS),
+	HST: toInteger(line.HST), AST: toInteger(line.AST), 
+    HF: toInteger(line.HF),AF: toInteger(line.AF),
+    HC: toInteger(line.HC), AC: toInteger(line.AC),
+	HY: toInteger(line.HY), AY: toInteger(line.AY),
+    HR: toInteger(line.HR),AR: toInteger(line.AR)})
+
+// 3. relationship betn referee and date
+load csv with headers from "file:///Task_2_PremierLeauge_2019.csv" as line
+match(r:Referee), (m:Match)
+where r.RefereeName = line.Referee and m.MatchDate = line.Date and m.MatchTime =line.Time and m.FTHG = toInteger(line.FTHG) and m.FTAG = toInteger(line. FTAG) and
+m.FTR = line.FTR and m.HTHG = toInteger(line.HTHG) and m.HTAG = 	toInteger(line.HTAG) and m.HTR = line.HTR and m.HS = toInteger(line.HS) and m.AS = toInteger(line.AS) and m.HST = toInteger(line.HST) and 				m.AST = toInteger(line.AST) and  m.HF = toInteger(line.HF) and m.AF = toInteger(line.AF) and m.HC = toInteger(line.HC) and m.AC = toInteger(line.AC) and m.HY = toInteger(line.HY) and m.AY = toInteger(line.AY) and m.HR = toInteger(line.HR) and m.AR = toInteger(line.AR)
+create (r)-[:REFERS_ON]->(m)
+
+load csv with headers from "File:///Task_2_PremierLeauge_2019.csv" as line
+merge(:AwayTeam{AwayTeamName: line.AwayTeam, LeagueDivison: line.Div})
+
+// 5. create hometeam
+load csv with headers from "File:///Task_2_PremierLeauge_2019.csv" as line
+merge(:HomeTeam{HomeTeamName: line.HomeTeam, LeagueDivison: line.Div})
+
+// 6. relation between away and home
+load csv with headers from "File:///Task_2_PremierLeauge_2019.csv" as line
+match(a:AwayTeam), (h:HomeTeam)
+where a.AwayTeamName=line.AwayTeam and h.HomeTeamName=line.HomeTeam
+merge (a)-[:PLAYS_WITH]->(h)
+
+// 8. relation betn away and match
+load csv with headers from "File:///Task_2_PremierLeauge_2019.csv" as line
+match (a:AwayTeam), (m:Match)
+where a.AwayTeamName = line.AwayTeam and m.MatchDate = line.Date and m.MatchTime =line.Time and m.FTHG = toInteger(line.FTHG) and m.FTAG = toInteger(line. FTAG) and
+m.FTR = line.FTR and m.HTHG = toInteger(line.HTHG) and m.HTAG = 	toInteger(line.HTAG) and m.HTR = line.HTR and m.HS = toInteger(line.HS) and m.AS = toInteger(line.AS) and m.HST = toInteger(line.HST) and 				m.AST = toInteger(line.AST) and  m.HF = toInteger(line.HF) and m.AF = toInteger(line.AF) and m.HC = toInteger(line.HC) and m.AC = toInteger(line.AC) and m.HY = toInteger(line.HY) and m.AY = toInteger(line.AY) and m.HR = toInteger(line.HR) and m.AR = toInteger(line.AR)
+create (a)-[:PLAYS]->(m)
+
+// 9. relation betn away and match
+load csv with headers from "File:///Task_2_PremierLeauge_2019.csv" as line
+match (h:HomeTeam), (m:Match)
+where a.AwayTeamName = line.AwayTeam and m.MatchDate = line.Date and m.MatchTime =line.Time and m.FTHG = toInteger(line.FTHG) and m.FTAG = toInteger(line. FTAG) and
+m.FTR = line.FTR and m.HTHG = toInteger(line.HTHG) and m.HTAG = 	toInteger(line.HTAG) and m.HTR = line.HTR and m.HS = toInteger(line.HS) and m.AS = toInteger(line.AS) and m.HST = toInteger(line.HST) and 				m.AST = toInteger(line.AST) and  m.HF = toInteger(line.HF) and m.AF = toInteger(line.AF) and m.HC = toInteger(line.HC) and m.AC = toInteger(line.AC) and m.HY = toInteger(line.HY) and m.AY = toInteger(line.AY) and m.HR = toInteger(line.HR) and m.AR = toInteger(line.AR)
+create (h)-[:PLAYS]->(m)
+
+// 10. question 3 query
+match (a:AwayTeam)
+return a.AwayTeamName as `Teams playing in the season`
+union match (h:HomeTeam)
+return h.HomeTeamName as `Teams playing in the season`
+
+// 11. Question 4 querry
+match (r:Referee)-[ro:REFERS_ON]->(m:Match)
+return count(m.MatchDate) as `Matches Refered`, r.RefereeName as `Referee name`
+
+// 12. Question 6 query
+match (a:AwayTeam)-[p:PLAYS]->(m:Match)
+where a.AwayTeamName = "Arsenal" and m.FTR = "A"
+return a.AwayTeamName as `Team name`, m.MatchDate + " "  + m.MatchTime as `Date-time of the matches`
+
+// 13. question 7 query
+match (h:HomeTeam)-[p:PLAYS]->(m:Match)
+where h.HomeTeamName = "Man United" and m.FTR = "A"
+return m.MatchDate as `Date-time of matches lost by Man United`, h.HomeTeamName as `Team name`
+union
+match (a:AwayTeam)-[p:PLAYS]->(m:Match)
+where a.AwayTeamName = "Man United" and m.FTR = "H"
+return m.MatchDate as `Date-time of matches lost by Man United`, a.AwayTeamName as `Team name`
+
+// 14. question 8 query
+match (h:HomeTeam)-[p:PLAYS]->(m:Match)
+where h.HomeTeamName = "Man United" and m.FTR = "H" and m.HTR = "A"
+return m.MatchDate as `Date-time of matches played`, h.HomeTeamName as 
+`Team name`
+union
+match (a:AwayTeam)-[p:PLAYS]->(m:Match)
+where a.AwayTeamName = "Liverpool" and m.FTR = "A" and m.HTR = "H"
+return m.MatchDate as `Date-time of matches played`, a.AwayTeamName as
+`Team name`
+
+
+
+
+
+
